@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - develop
+
+pr:
+  branches:
+    include:
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  pythonVersion: '3.11'
+
+steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(pythonVersion)'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- script: |
+    python -m pytest tests/ -v
+  displayName: 'Run automated tests'
+
+- script: |
+    mkdir -p $(Build.ArtifactStagingDirectory)/application
+    cp -R src $(Build.ArtifactStagingDirectory)/application/
+    cp requirements.txt $(Build.ArtifactStagingDirectory)/application/
+  displayName: 'Package application'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/application'
+    ArtifactName: 'application'
+    publishLocation: 'Container'
+  displayName: 'Publish application artifact'
