@@ -1,0 +1,81 @@
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: ci
+    source: Enterprise-CI
+    trigger:
+      branches:
+        include:
+        - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Development
+  displayName: 'Deploy to Development'
+
+  jobs:
+  - deployment: DeployDev
+    environment: development
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - download: ci
+            artifact: application
+
+          - script: |
+              echo "Deploying application to Development"
+              ls -R $(Pipeline.Workspace)
+            displayName: 'Development deployment'
+
+
+- stage: QA
+  displayName: 'Deploy to QA'
+
+  dependsOn: Development
+
+  jobs:
+  - deployment: DeployQA
+    environment: qa
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - download: ci
+            artifact: application
+
+          - script: |
+              echo "Deploying application to QA"
+              ls -R $(Pipeline.Workspace)
+            displayName: 'QA deployment'
+
+
+- stage: Production
+  displayName: 'Deploy to Production'
+
+  dependsOn: QA
+
+  jobs:
+  - deployment: DeployProduction
+    environment: production
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - download: ci
+            artifact: application
+
+          - script: |
+              echo "Deploying application to Production"
+              ls -R $(Pipeline.Workspace)
+            displayName: 'Production deployment'
