@@ -1,81 +1,74 @@
 trigger: none
 
-resources:
-  pipelines:
-  - pipeline: ci
-    source: Enterprise-CI
-    trigger:
-      branches:
-        include:
-        - develop
-
 pool:
   vmImage: ubuntu-latest
 
 stages:
 
 - stage: Development
-  displayName: 'Deploy to Development'
+  displayName: Deploy to Development
 
   jobs:
-  - deployment: DeployDev
-    environment: development
+  - deployment: DeployDevelopment
+    displayName: Development Deployment
+
+    environment: Development
 
     strategy:
       runOnce:
         deploy:
           steps:
 
-          - download: ci
-            artifact: application
+          - checkout: self
 
           - script: |
               echo "Deploying application to Development"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'Development deployment'
+            displayName: Deploy to Development
 
 
 - stage: QA
-  displayName: 'Deploy to QA'
+  displayName: Deploy to QA
 
   dependsOn: Development
+  condition: succeeded()
 
   jobs:
   - deployment: DeployQA
-    environment: qa
+    displayName: QA Deployment
+
+    environment: QA
 
     strategy:
       runOnce:
         deploy:
           steps:
 
-          - download: ci
-            artifact: application
+          - checkout: self
 
           - script: |
               echo "Deploying application to QA"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'QA deployment'
+            displayName: Deploy to QA
 
 
 - stage: Production
-  displayName: 'Deploy to Production'
+  displayName: Deploy to Production
 
   dependsOn: QA
+  condition: succeeded()
 
   jobs:
   - deployment: DeployProduction
-    environment: production
+    displayName: Production Deployment
+
+    environment: Production
 
     strategy:
       runOnce:
         deploy:
           steps:
 
-          - download: ci
-            artifact: application
+          - checkout: self
 
           - script: |
               echo "Deploying application to Production"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'Production deployment'
+            displayName: Deploy to Production
