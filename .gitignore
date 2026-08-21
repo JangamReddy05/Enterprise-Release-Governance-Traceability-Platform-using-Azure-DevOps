@@ -1,0 +1,96 @@
+gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Flask
+instance/
+.webassets-cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Build output
+artifacts/
+release/
+packages/
+
+# Azure DevOps local files
+.azure/
+.azure-pipelines/
+
+# Test output
+test-results/
+coverage/
+
+# Local configuration
+local.settings.json
+
+# Secrets
+*.pem
+*.key
+*.pfx
+*.cer
+secrets.json
+credentials.json
+
+# Terraform - intentionally included to prevent accidental files
+# if Terraform is installed locally
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Node
+node_modules/
+
+# Generated documentation
+site/
+
+# Local scripts output
+output/
+temp/
+
+# Keep GitHub/Azure DevOps documentation placeholders
+!.gitkeep
+
