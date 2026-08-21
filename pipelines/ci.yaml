@@ -16,28 +16,35 @@ variables:
 
 steps:
 
+- checkout: self
+  displayName: 'Checkout Source Code'
+
 - task: UsePythonVersion@0
+  displayName: 'Use Python $(pythonVersion)'
   inputs:
     versionSpec: '$(pythonVersion)'
 
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  displayName: 'Install Dependencies'
 
 - script: |
-    python -m pytest tests/ -v
-  displayName: 'Run automated tests'
+    pytest -v
+  displayName: 'Run Automated Tests'
 
 - script: |
-    mkdir -p $(Build.ArtifactStagingDirectory)/application
-    cp -R src $(Build.ArtifactStagingDirectory)/application/
-    cp requirements.txt $(Build.ArtifactStagingDirectory)/application/
-  displayName: 'Package application'
+    mkdir -p "$(Build.ArtifactStagingDirectory)/drop"
 
-- task: PublishBuildArtifacts@1
+    cp -r src "$(Build.ArtifactStagingDirectory)/drop/"
+    cp requirements.txt "$(Build.ArtifactStagingDirectory)/drop/"
+
+    echo "Artifact contents:"
+    find "$(Build.ArtifactStagingDirectory)/drop" -type f
+  displayName: 'Prepare Build Artifact'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Build Artifact'
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/application'
-    ArtifactName: 'application'
-    publishLocation: 'Container'
-  displayName: 'Publish application artifact'
+    targetPath: '$(Build.ArtifactStagingDirectory)/drop'
+    artifact: 'drop'
