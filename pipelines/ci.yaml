@@ -1,0 +1,50 @@
+trigger:
+  branches:
+    include:
+      - develop
+
+pr:
+  branches:
+    include:
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  pythonVersion: '3.11'
+
+steps:
+
+- checkout: self
+  displayName: 'Checkout Source Code'
+
+- task: UsePythonVersion@0
+  displayName: 'Use Python $(pythonVersion)'
+  inputs:
+    versionSpec: '$(pythonVersion)'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install Dependencies'
+
+- script: |
+    pytest -v
+  displayName: 'Run Automated Tests'
+
+- script: |
+    mkdir -p "$(Build.ArtifactStagingDirectory)/drop"
+
+    cp -r src "$(Build.ArtifactStagingDirectory)/drop/"
+    cp requirements.txt "$(Build.ArtifactStagingDirectory)/drop/"
+
+    echo "Artifact contents:"
+    find "$(Build.ArtifactStagingDirectory)/drop" -type f
+  displayName: 'Prepare Build Artifact'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Build Artifact'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/drop'
+    artifact: 'drop'
