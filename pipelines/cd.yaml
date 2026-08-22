@@ -1,16 +1,22 @@
+name: cd deployment
+
 trigger: none
 
+pr: none
+
 resources:
+
   pipelines:
+
   - pipeline: ci
-    source: Enterprise-CI
-    trigger:
-      branches:
-        include:
-        - develop
+    source: ci build
+    trigger: true
 
 pool:
   vmImage: ubuntu-latest
+
+variables:
+  artifactName: 'drop'
 
 stages:
 
@@ -18,64 +24,99 @@ stages:
   displayName: 'Deploy to Development'
 
   jobs:
-  - deployment: DeployDev
+
+  - deployment: DeployDevelopment
+    displayName: 'Deploy Application to Development'
+
     environment: development
 
     strategy:
       runOnce:
         deploy:
+
           steps:
 
           - download: ci
-            artifact: application
+            artifact: $(artifactName)
+            displayName: 'Download CI Artifact'
 
           - script: |
-              echo "Deploying application to Development"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'Development deployment'
+              echo "========================================="
+              echo "Deploying to Development"
+              echo "========================================="
+
+              echo "Artifact contents:"
+              find "$(Pipeline.Workspace)/ci/$(artifactName)" -type f
+
+              echo "Development deployment completed."
+            displayName: 'Deploy to Development'
 
 
-- stage: QA
-  displayName: 'Deploy to QA'
+- stage: Staging
+  displayName: 'Deploy to Staging'
 
   dependsOn: Development
+  condition: succeeded()
 
   jobs:
-  - deployment: DeployQA
-    environment: qa
+
+  - deployment: DeployStaging
+    displayName: 'Deploy Application to Staging'
+
+    environment: staging
 
     strategy:
       runOnce:
         deploy:
+
           steps:
 
           - download: ci
-            artifact: application
+            artifact: $(artifactName)
+            displayName: 'Download CI Artifact'
 
           - script: |
-              echo "Deploying application to QA"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'QA deployment'
+              echo "========================================="
+              echo "Deploying to Staging"
+              echo "========================================="
+
+              echo "Artifact contents:"
+              find "$(Pipeline.Workspace)/ci/$(artifactName)" -type f
+
+              echo "Staging deployment completed."
+            displayName: 'Deploy to Staging'
 
 
 - stage: Production
   displayName: 'Deploy to Production'
 
-  dependsOn: QA
+  dependsOn: Staging
+  condition: succeeded()
 
   jobs:
+
   - deployment: DeployProduction
+    displayName: 'Deploy Application to Production'
+
     environment: production
 
     strategy:
       runOnce:
         deploy:
+
           steps:
 
           - download: ci
-            artifact: application
+            artifact: $(artifactName)
+            displayName: 'Download CI Artifact'
 
           - script: |
-              echo "Deploying application to Production"
-              ls -R $(Pipeline.Workspace)
-            displayName: 'Production deployment'
+              echo "========================================="
+              echo "Deploying to Production"
+              echo "========================================="
+
+              echo "Artifact contents:"
+              find "$(Pipeline.Workspace)/ci/$(artifactName)" -type f
+
+              echo "Production deployment completed."
+            displayName: 'Deploy to Production'
